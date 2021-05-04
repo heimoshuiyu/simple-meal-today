@@ -1,7 +1,9 @@
 package record
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -11,7 +13,17 @@ func TesNewtRecord(t *testing.T) {
 }
 
 func TestSaveAndLoadFile(t *testing.T) {
-	record := NewRecord()
+	r := Record{
+		AdminUsersID: 1,
+		RegistedGroupID: -100,
+		RegistedUsersID: make([]int, 0),
+	}
+	f, err := os.Create("config_before.json")
+	if err != nil {
+		t.Fatal("Can not create original config file")
+	}
+	json.NewEncoder(f).Encode(&r)
+	record := NewRecord("config_before")
 	record.Save("config_before.json")
 	record.AdminUsersID = 39
 	record.Save("config_after.json")
@@ -22,7 +34,17 @@ func TestSaveAndLoadFile(t *testing.T) {
 }
 
 func TestRegistedUsers(t *testing.T) {
-	record := NewRecord()
+	r := Record{
+		AdminUsersID: 1,
+		RegistedGroupID: -100,
+		RegistedUsersID: make([]int, 0),
+	}
+	f, err := os.Create("config_before.json")
+	if err != nil {
+		t.Fatal("Can not create original config file")
+	}
+	json.NewEncoder(f).Encode(&r)
+	record := NewRecord("config_before.json")
 	if record.IsRegistedUser(0) {
 		t.Fatal("0 should not be registed user")
 	}
