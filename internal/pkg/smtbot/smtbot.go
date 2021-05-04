@@ -50,11 +50,11 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	// regist group
 	if update.Message.Command() == "registchat" && update.Message.From.ID == smtbot.record.AdminUsersID {
 		smtbot.record.RegistedGroupID = update.Message.Chat.ID
-		smtbot.Send(update, "【Chat注册成功】大家好，我是本群的吃饭睡觉提醒小助手，希望看见这条消息的群友可以和我一样，做个一天4顿饭+睡20个小时的five吧~\n【使用方法】在群内发送 /regist 命令进行注册，然后把 #朴素一餐 的照片通过私聊发给我就可以啦~")
+		smtbot.Send(update, "【Chat注册成功】大家好，我是本群的吃饭睡觉提醒小助手，希望看见这条消息的群友可以和我一样，做个一天4顿饭+睡20个小时的five吧~\n【使用方法】在群内发送 /register 命令进行注册，然后把 #朴素一餐 的照片通过私聊发给我就可以啦~")
 		return
 	}
 
-	if update.Message.Command() == "regist" && update.Message.Chat.ID == smtbot.record.RegistedGroupID {
+	if update.Message.Command() == "register" && update.Message.Chat.ID == smtbot.record.RegistedGroupID {
 		smtbot.record.AddRegistedUser(update.Message.From.ID)
 		smtbot.Send(update, "可爱的【" + update.Message.From.FirstName + "】你已经成功注册")
 		return
