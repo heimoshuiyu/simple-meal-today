@@ -8,7 +8,7 @@ import (
 type Record struct {
 	AdminUsersID int
 	RegistedGroupID int64
-	RegistedUsersID []int
+	RegistedUsersID map[int]bool
 }
 
 func NewRecord(recordFile string) (*Record) {
@@ -48,14 +48,10 @@ func (r *Record) Save(filename string) (error) {
 }
 
 func (r *Record) AddRegistedUser(userId int) {
-	r.RegistedUsersID = append(r.RegistedUsersID, userId)
+	r.RegistedUsersID[userId] = true
 }
 
 func (r *Record) IsRegistedUser(userId int) (bool) {
-	for _, i := range r.RegistedUsersID {
-		if userId == i {
-			return true
-		}
-	}
-	return false
+	_, ok := r.RegistedUsersID[userId]
+	return ok
 }

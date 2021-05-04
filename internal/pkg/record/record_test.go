@@ -9,14 +9,14 @@ import (
 
 func TesNewtRecord(t *testing.T) {
 	new_record := new(Record)
-	new_record.RegistedUsersID = make([]int, 0)
+	new_record.RegistedUsersID = make(map[int]bool)
 }
 
 func TestSaveAndLoadFile(t *testing.T) {
 	r := Record{
 		AdminUsersID: 1,
 		RegistedGroupID: -100,
-		RegistedUsersID: make([]int, 0),
+		RegistedUsersID: make(map[int]bool),
 	}
 	f, err := os.Create("config_before.json")
 	if err != nil {
@@ -37,7 +37,7 @@ func TestRegistedUsers(t *testing.T) {
 	r := Record{
 		AdminUsersID: 1,
 		RegistedGroupID: -100,
-		RegistedUsersID: make([]int, 0),
+		RegistedUsersID: make(map[int]bool),
 	}
 	f, err := os.Create("config_before.json")
 	if err != nil {
@@ -53,4 +53,5 @@ func TestRegistedUsers(t *testing.T) {
 		fmt.Println(record.RegistedUsersID)
 		t.Fatal("39 should be registed user")
 	}
+	record.Save("config_after.json")
 }
