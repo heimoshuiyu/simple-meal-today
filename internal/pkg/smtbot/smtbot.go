@@ -3,6 +3,7 @@ package smtbot
 import (
 	"errors"
 	"log"
+	"smt/internal/pkg/db"
 	"smt/internal/pkg/record"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -12,6 +13,7 @@ type SmtBot struct {
 	TgBotAPI *tgbotapi.BotAPI
 	UpdatesChan tgbotapi.UpdatesChannel
 	record *record.Record
+	db *db.DB
 }
 
 
@@ -48,7 +50,7 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	}
 
 	// regist group
-	if update.Message.Command() == "registchat" && update.Message.From.ID == smtbot.record.AdminUsersID {
+	if update.Message.Command() == "registerchat" && update.Message.From.ID == smtbot.record.AdminUsersID {
 		smtbot.record.RegistedGroupID = update.Message.Chat.ID
 		smtbot.Send(update, "【Chat注册成功】大家好，我是本群的吃饭睡觉提醒小助手，希望看见这条消息的群友可以和我一样，做个一天4顿饭+睡20个小时的five吧~\n【使用方法】在群内发送 /register 命令进行注册，然后把 #朴素一餐 的照片通过私聊发给我就可以啦~")
 		return
@@ -103,6 +105,19 @@ func (smtbot *SmtBot) ProcessPrivateMessage(update tgbotapi.Update) {
 }
 
 func (smtbot *SmtBot) ProcessGroupMessage(update tgbotapi.Update) {
+	var err error
+
+	// ignore all not registed chat message
+	if update.Message.Chat.ID != smtbot.record.RegistedGroupID {
+		return
+	}
+
+	if update.Message.Text != "" {
+		err = smtbot.db.RecordMessage(update.Message.Text)
+		if err != nil {
+			log.Println("Failed at record messageText to db at " + err.Error())
+		}
+	}
 }
 
 func (smtbot *SmtBot) Run() (error) {
@@ -123,7 +138,7 @@ func (smtbot *SmtBot) Run() (error) {
 			continue
 		}
 
-		if update.Message.Chat.IsGroup() {
+		if update.Message.Chat.IsSuperGroup() {
 			smtbot.ProcessGroupMessage(update)
 			continue
 		}
@@ -135,12 +150,18 @@ func (smtbot *SmtBot) Run() (error) {
 	return nil
 }
 
-func NewSmtBot(token string, debug bool, timeout int, recordFile string) (*SmtBot, error) {
+func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFile string, databaseName string) (*SmtBot, error) {
 	var err error
 	smtbot := new(SmtBot)
 
 	// load record
-	smtbot.record = record.NewRecord(recordFile)
+	smtbot.record = record.NewRecord(recordFile, adminUserId)
+
+	// load database
+	smtbot.db, err = db.NewDB(databaseName)
+	if err != nil {
+		log.Fatal("Can not create new db at " + err.Error())
+	}
 
 	smtbot.TgBotAPI, err = tgbotapi.NewBotAPI(token)
 	if err != nil {

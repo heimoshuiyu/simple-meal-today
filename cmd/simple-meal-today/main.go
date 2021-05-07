@@ -11,6 +11,7 @@ var Timeout int
 var Token string
 var RecordFile string
 var AdminUsersID int
+var DatabaseName string
 
 func init() {
 	flag.BoolVar(&Debug, "debug", true, "Enable debug mod for tgbotapi")
@@ -18,6 +19,7 @@ func init() {
 	flag.StringVar(&Token, "token", "", "telegram bot api token")
 	flag.StringVar(&RecordFile, "record", "record.json", "record of simple-meal-today bot")
 	flag.IntVar(&AdminUsersID, "admin", 0, "Telegram admin user id")
+	flag.StringVar(&DatabaseName, "db", "db.sqlite", "database name for sqlite3")
 }
 
 func main() {
@@ -30,7 +32,7 @@ func main() {
 	}
 
 	// create new smt bot
-	smtbot, err := smtbot.NewSmtBot(Token, Debug, Timeout, RecordFile)
+	smtbot, err := smtbot.NewSmtBot(Token, AdminUsersID, Debug, Timeout, RecordFile, DatabaseName)
 	if err != nil {
 		log.Fatal("Fail at creating smtbot " + err.Error())
 	}
