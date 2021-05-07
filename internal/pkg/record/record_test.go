@@ -24,9 +24,9 @@ func TestSaveAndLoadFile(t *testing.T) {
 	}
 	json.NewEncoder(f).Encode(&r)
 	record := NewRecord("config_before")
-	record.Save("config_before.json")
+	record.SaveAs("config_before.json")
 	record.AdminUsersID = 39
-	record.Save("config_after.json")
+	record.SaveAs("config_after.json")
 	record.Load("config_before.json")
 	if record.AdminUsersID != 0 {
 		t.Fatal("AdminUsersID after load not match!")
@@ -53,5 +53,5 @@ func TestRegistedUsers(t *testing.T) {
 		fmt.Println(record.RegistedUsersID)
 		t.Fatal("39 should be registed user")
 	}
-	record.Save("config_after.json")
+	record.SaveAs("config_after.json")
 }

@@ -9,11 +9,13 @@ type Record struct {
 	AdminUsersID int
 	RegistedGroupID int64
 	RegistedUsersID map[int]bool
+	recordFile string
 }
 
 func NewRecord(recordFile string) (*Record) {
 	new_record := new(Record)
 	new_record.Load(recordFile)
+	new_record.recordFile = recordFile
 	return new_record
 }
 
@@ -32,7 +34,11 @@ func (r *Record) Load(filename string) (error) {
 	return nil
 }
 
-func (r *Record) Save(filename string) (error) {
+func (r *Record) Save() (error) {
+	return r.SaveAs(r.recordFile)
+}
+
+func (r *Record) SaveAs(filename string) (error) {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err

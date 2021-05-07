@@ -60,6 +60,11 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 		return
 	}
 
+	if update.Message.Command() == "save" && update.Message.From.ID == smtbot.record.AdminUsersID {
+		smtbot.record.Save()
+		return
+	}
+
 }
 
 
