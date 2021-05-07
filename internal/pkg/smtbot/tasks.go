@@ -9,7 +9,7 @@ import (
 var sleepSticker string = "CAACAgUAAxkBAAK5H2CVQcBquJ9LqKGCr9rAYWj4wjCfAAI7AAMtPtckaxkpI1cDyakfBA"
 var learningSticker string = "CAACAgUAAxkBAAK5I2CVRReCvK-ZAoDtjmKFUfkjbenHAAI9AAMtPtcksc1z1vy5AAFuHwQ"
 var shuayaSticker string = "CAACAgUAAxkBAAK5J2CVRcLzkEpjyHLjKElAowvSTLqEAAI8AAMtPtckPoNCwGCtGzEfBA"
-var guguVideo string = "BAACAgUAAxkBAAK5K2CVSoNnugu991BZ4gK4ld3u3Dj_AAL9AQACy-nxVzyxRBUpFzDQHwQ"
+var guruVideo string = "https://t.me/aquarium_public/920"
 
 func (smtbot *SmtBot) StartTaskWorkers() {
 	smtbot.wg = new(sync.WaitGroup)
@@ -43,7 +43,7 @@ func (smtbot *SmtBot) RemindToLearn() {
 
 func (smtbot *SmtBot) PrepareToSleep() {
 	smtbot.SendStickerToID(smtbot.record.RegistedGroupID, shuayaSticker)
-	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, guguVideo)
+	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, guruVideo)
 }
 
 func (smtbot *SmtBot) GoodEvening() {
@@ -69,5 +69,5 @@ func (smtbot *SmtBot) GoodMorning() {
 	smtbot.SendToID(smtbot.record.RegistedGroupID, text)
 
 	smtbot.SendStickerToID(smtbot.record.RegistedGroupID, shuayaSticker)
-	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, guguVideo)
+	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, guruVideo)
 }
