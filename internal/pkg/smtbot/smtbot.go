@@ -8,6 +8,7 @@ import (
 	"smt/internal/pkg/db"
 	"smt/internal/pkg/record"
 	"strings"
+	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -18,6 +19,7 @@ type SmtBot struct {
 	record *record.Record
 	db *db.DB
 	ans *ans.Ans
+	wg *sync.WaitGroup
 }
 
 
@@ -34,6 +36,11 @@ func (smtbot *SmtBot) RecordPhoto(update tgbotapi.Update) (error) {
 
 func (smtbot *SmtBot) Send(update tgbotapi.Update, text string) {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	smtbot.SendMessage(msg)
+}
+
+func (smtbot *SmtBot) SendToID(id int64, text string) {
+	msg := tgbotapi.NewMessage(id, text)
 	smtbot.SendMessage(msg)
 }
 
@@ -82,29 +89,33 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	}
 
 	if update.Message.Command() == "words" && smtbot.record.IsRegistedUser(update.Message.From.ID) {
-		allMessages, err := smtbot.db.GetAllMessages()
-		numOfAllMessages := len(allMessages)
-		if err != nil {
-			smtbot.Send(update, "获取词频错误：" + err.Error())
-			return
-		}
-		wordCounts := smtbot.ans.CalcWordCounts(allMessages)
-		numofAllWords := 0
-		for _, v := range wordCounts {
-			numofAllWords += v
-		}
-		words := smtbot.ans.CalcDailyWordsTrend(wordCounts)
-		wordlist := strings.Join(words, "，")
-		msgText := fmt.Sprintf(
-			"今日统计：\n消息数量：%d，词条数量：%d\n今日关键词：%s",
-			numOfAllMessages,
-			numofAllWords,
-			wordlist,
-		)
-		smtbot.Send(update, msgText)
+		smtbot.ReportWords(update.Message.Chat.ID)
 		return
 	}
 
+}
+
+func (smtbot *SmtBot) ReportWords(chatID int64) {
+	allMessages, err := smtbot.db.GetAllMessages()
+	numOfAllMessages := len(allMessages)
+	if err != nil {
+		smtbot.SendToID(chatID, "获取词频错误：" + err.Error())
+		return
+	}
+	wordCounts := smtbot.ans.CalcWordCounts(allMessages)
+	numofAllWords := 0
+	for _, v := range wordCounts {
+		numofAllWords += v
+	}
+	words := smtbot.ans.CalcDailyWordsTrend(wordCounts)
+	wordlist := strings.Join(words, "，")
+	msgText := fmt.Sprintf(
+		"今日统计：\n消息数量：%d，词条数量：%d\n今日关键词：%s",
+		numOfAllMessages,
+		numofAllWords,
+		wordlist,
+	)
+	smtbot.SendToID(chatID, msgText)
 }
 
 
@@ -217,6 +228,9 @@ func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFil
 	if err != nil {
 		return nil, errors.New("Failed at creating updates channel " + err.Error())
 	}
+
+	// load task
+	smtbot.StartTaskWorkers()
 
 	return smtbot, nil
 }
