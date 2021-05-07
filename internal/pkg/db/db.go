@@ -3,9 +3,11 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"os"
 	"time"
 
+	"github.com/heimoshuiyu/gocc"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -21,6 +23,7 @@ type DB struct {
 	RecordStmt *sql.Stmt
 	DropStmt *sql.Stmt
 	GetAllMessagesStmt *sql.Stmt
+	T2s *gocc.OpenCC
 }
 
 func (db *DB) GetAllMessages() ([]string, error) {
@@ -56,7 +59,12 @@ func (db *DB) ResetMessages() (error) {
 }
 
 func (db *DB) RecordMessage(messageText string) (error) {
-	db.RecordStmt.Exec(messageText, time.Now().Unix())
+	translatedMessageText, err := db.T2s.Convert(messageText)
+	if err != nil {
+		log.Println("Can not translate", messageText, err.Error())
+		translatedMessageText = messageText
+	}
+	db.RecordStmt.Exec(translatedMessageText, time.Now().Unix())
 	return nil
 }
 
@@ -95,6 +103,11 @@ func NewDB(DatabaseName string) (*DB, error) {
 	new_db.GetAllMessagesStmt, err = new_db.SqlConn.Prepare(sqlGetAllMessages)
 	if err != nil {
 		return nil, errors.New("Can not init GetAllMessagesStmt at " + err.Error())
+	}
+
+	new_db.T2s, err = gocc.New("t2s")
+	if err != nil {
+		return nil, errors.New("Can not init t2s at " + err.Error())
 	}
 
 	return new_db, nil

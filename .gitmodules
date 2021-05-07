@@ -1,0 +1,4 @@
+[submodule "cmd/simple-meal-today/gocc"]
+	path = cmd/simple-meal-today/gocc
+	url = https://github.com/heimoshuiyu/gocc
+	branch = pure-config
