@@ -16,7 +16,9 @@ func NewRecord(recordFile string, adminUserId int) (*Record) {
 	new_record := new(Record)
 	new_record.Load(recordFile)
 	new_record.recordFile = recordFile
-	new_record.AdminUsersID = adminUserId
+	if adminUserId != 0 {
+		new_record.AdminUsersID = adminUserId
+	}
 	return new_record
 }
 
