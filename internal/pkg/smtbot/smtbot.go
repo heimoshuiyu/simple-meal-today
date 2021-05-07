@@ -62,12 +62,16 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	}
 
 	if update.Message.Command() == "register" && update.Message.Chat.ID == smtbot.record.RegistedGroupID {
+		if smtbot.record.IsRegistedUser(update.Message.From.ID) {
+			smtbot.Send(update, "歪？" + update.Message.From.FirstName + "你注册过了诶？")
+			return
+		}
 		smtbot.record.AddRegistedUser(update.Message.From.ID)
 		smtbot.Send(update, "可爱的【" + update.Message.From.FirstName + "】你已经成功注册")
 		return
 	}
 
-	if update.Message.Command() == "save" && update.Message.From.ID == smtbot.record.AdminUsersID {
+	if update.Message.Command() == "save" && smtbot.record.IsRegistedUser(update.Message.From.ID) {
 		err = smtbot.record.Save()
 		if err != nil {
 			smtbot.Send(update, "保存操作执行失败：" + err.Error())
