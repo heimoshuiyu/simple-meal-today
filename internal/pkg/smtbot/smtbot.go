@@ -6,6 +6,7 @@ import (
 	"log"
 	"smt/internal/pkg/ans"
 	"smt/internal/pkg/db"
+	"smt/internal/pkg/material"
 	"smt/internal/pkg/record"
 	"strings"
 	"sync"
@@ -16,6 +17,7 @@ import (
 type SmtBot struct {
 	TgBotAPI *tgbotapi.BotAPI
 	UpdatesChan tgbotapi.UpdatesChannel
+	Material *material.Material
 	record *record.Record
 	db *db.DB
 	ans *ans.Ans
@@ -101,6 +103,11 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	if update.Message.Command() == "words" && smtbot.record.IsRegistedUser(update.Message.From.ID) {
 		smtbot.ReportWords(update.Message.Chat.ID)
 		return
+	}
+
+	// get food
+	if update.Message.Command() == "getfood" && smtbot.record.IsRegistedUser(update.Message.From.ID) {
+		smtbot.Send(update, smtbot.Material.GetFood())
 	}
 
 }
@@ -224,6 +231,12 @@ func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFil
 
 	// load analysis
 	smtbot.ans = ans.NewAns()
+
+	// load material
+	smtbot.Material, err = material.NewMaterial("food.json")
+	if err != nil {
+		log.Fatal("Can not create material object at " + err.Error())
+	}
 
 	smtbot.TgBotAPI, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
