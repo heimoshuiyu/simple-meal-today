@@ -2,10 +2,37 @@ package ans
 
 import (
 	"sort"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/yanyiwu/gojieba"
 )
+
+var PartOfSpeechNeeded map[string]bool = map[string]bool {
+	"a": true,
+	"ad": true,
+	"ag": true,
+	"an": true,
+	"e": true,
+	"g": true,
+	"i": true,
+	"l": true,
+	"n": true,
+	"ng": true,
+	"nr": true,
+	"nrfg": true,
+	"nrt": true,
+	"ns": true,
+	"nt": true,
+	"nz": true,
+	"o": true,
+	"t": true,
+	"tg": true,
+	"vg": true,
+	"vi": true,
+	"vn": true,
+	"vq": true,
+}
 
 type Ans struct {
 	TmpDir string
@@ -16,6 +43,26 @@ func NewAns() (*Ans) {
 	new_ans := new(Ans)
 	new_ans.Jieba = gojieba.NewJieba()
 	return new_ans
+}
+
+func (ans *Ans) FilterTags(tags []string) ([]string) {
+	ret := make([]string, 0, 10)
+	for _, tag := range tags {
+		wordAndPs := strings.Split(tag, "/")
+		if len(wordAndPs) != 2 {
+			continue
+		}
+		if !ans.IsPartOfSpeechNeeded(wordAndPs[1]) {
+			continue
+		}
+		ret = append(ret, wordAndPs[0])
+	}
+	return ret
+}
+
+func (ans *Ans) IsPartOfSpeechNeeded(word string) (bool) {
+	_, ok := PartOfSpeechNeeded[word]
+	return ok
 }
 
 func (ans *Ans) CalcDailyWordsTrend(wordCounts map[string]int) ([]string) {
@@ -57,7 +104,8 @@ func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
 func (ans *Ans) CalcWordCounts(words []string) (map[string]int) {
 	ret := make(map[string]int)
 	for _, word := range words {
-		x := ans.Jieba.CutAll(word)
+		x := ans.Jieba.Tag(word)
+		x = ans.FilterTags(x)
 		for _, i := range x {
 			count, ok := ret[i]
 			if ok {

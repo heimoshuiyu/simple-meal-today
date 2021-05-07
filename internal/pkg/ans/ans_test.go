@@ -10,3 +10,10 @@ func TestAns(t *testing.T) {
 	t.Log(wordCounts)
 	t.Log(ans.CalcDailyWordsTrend(wordCounts))
 }
+
+func TestJieba(t *testing.T) {
+	ans := NewAns()
+	wordList := ans.Jieba.Tag("貨拉拉拉不拉拉布拉多")
+	t.Log(wordList)
+	t.Log(ans.FilterTags(wordList))
+}
