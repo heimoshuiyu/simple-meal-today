@@ -44,6 +44,16 @@ func (smtbot *SmtBot) SendToID(id int64, text string) {
 	smtbot.SendMessage(msg)
 }
 
+func (smtbot *SmtBot) SendStickerToID(id int64, fileID string) {
+	msg := tgbotapi.NewStickerShare(id, fileID)
+	smtbot.SendMessage(msg)
+}
+
+func (smtbot *SmtBot) SendVideoToID(id int64, fileID string) {
+	msg := tgbotapi.NewVideoShare(id, fileID)
+	smtbot.SendMessage(msg)
+}
+
 func (smtbot *SmtBot) SendMessage(msg tgbotapi.Chattable) {
 	_, err := smtbot.TgBotAPI.Send(msg)
 	if err != nil {
