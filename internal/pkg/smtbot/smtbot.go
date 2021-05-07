@@ -2,9 +2,12 @@ package smtbot
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"smt/internal/pkg/ans"
 	"smt/internal/pkg/db"
 	"smt/internal/pkg/record"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -14,6 +17,7 @@ type SmtBot struct {
 	UpdatesChan tgbotapi.UpdatesChannel
 	record *record.Record
 	db *db.DB
+	ans *ans.Ans
 }
 
 
@@ -41,6 +45,7 @@ func (smtbot *SmtBot) SendMessage(msg tgbotapi.Chattable) {
 }
 
 func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
+	var err error
 
 	// if no permission
 	log.Println("registed admin:", smtbot.record.AdminUsersID, "chat from", update.Message.From.ID)
@@ -63,7 +68,36 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 	}
 
 	if update.Message.Command() == "save" && update.Message.From.ID == smtbot.record.AdminUsersID {
-		smtbot.record.Save()
+		err = smtbot.record.Save()
+		if err != nil {
+			smtbot.Send(update, "保存操作执行失败：" + err.Error())
+			return
+		}
+		smtbot.Send(update, "保存配置完成")
+		return
+	}
+
+	if update.Message.Command() == "words" && smtbot.record.IsRegistedUser(update.Message.From.ID) {
+		allMessages, err := smtbot.db.GetAllMessages()
+		numOfAllMessages := len(allMessages)
+		if err != nil {
+			smtbot.Send(update, "获取词频错误：" + err.Error())
+			return
+		}
+		wordCounts := smtbot.ans.CalcWordCounts(allMessages)
+		numofAllWords := 0
+		for _, v := range wordCounts {
+			numofAllWords += v
+		}
+		words := smtbot.ans.CalcDailyWordsTrend(wordCounts)
+		wordlist := strings.Join(words, "，")
+		msgText := fmt.Sprintf(
+			"今日统计：\n消息数量：%d，词条数量：%d\n今日关键词：%s",
+			numOfAllMessages,
+			numofAllWords,
+			wordlist,
+		)
+		smtbot.Send(update, msgText)
 		return
 	}
 
@@ -162,6 +196,9 @@ func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFil
 	if err != nil {
 		log.Fatal("Can not create new db at " + err.Error())
 	}
+
+	// load analysis
+	smtbot.ans = ans.NewAns()
 
 	smtbot.TgBotAPI, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
