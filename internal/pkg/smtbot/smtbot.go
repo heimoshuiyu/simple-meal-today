@@ -6,10 +6,12 @@ import (
 	"log"
 	"smt/internal/pkg/ans"
 	"smt/internal/pkg/db"
+	"smt/internal/pkg/google"
 	"smt/internal/pkg/material"
 	"smt/internal/pkg/record"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -18,6 +20,7 @@ type SmtBot struct {
 	TgBotAPI *tgbotapi.BotAPI
 	UpdatesChan tgbotapi.UpdatesChannel
 	Material *material.Material
+	Google *google.Google
 	record *record.Record
 	db *db.DB
 	ans *ans.Ans
@@ -189,6 +192,15 @@ func (smtbot *SmtBot) ProcessGroupMessage(update tgbotapi.Update) {
 			log.Println("Failed at record messageText to db at " + err.Error())
 		}
 	}
+
+	// google search
+	if update.Message.Text != "" {
+		if utf8.RuneCountInString(update.Message.Text) >= 2 {
+			if update.Message.Text[0] == '!' {
+				smtbot.Send(update, smtbot.Google.GetSearchURL(update.Message.Text[1:]))
+			}
+		}
+	}
 }
 
 func (smtbot *SmtBot) Run() (error) {
@@ -245,6 +257,9 @@ func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFil
 	if err != nil {
 		log.Fatal("Can not create material object at " + err.Error())
 	}
+
+	// load google
+	smtbot.Google = google.NewGoogle()
 
 	smtbot.TgBotAPI, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
