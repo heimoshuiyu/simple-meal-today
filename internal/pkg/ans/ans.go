@@ -5,7 +5,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/heimoshuiyu/gocc"
 	"github.com/yanyiwu/gojieba"
@@ -95,9 +94,6 @@ func (ans *Ans) CalcDailyWordsTrend(wordCounts map[string]int) ([]string) {
 	for _, p := range pl {
 		if i >= 10 {
 			break
-		}
-		if utf8.RuneCountInString(p.Key) <= 1 {
-			continue
 		}
 		wordsToday = append(wordsToday, p.Key)
 		i++
