@@ -1,10 +1,13 @@
 package ans
 
 import (
+	"errors"
+	"log"
 	"sort"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/heimoshuiyu/gocc"
 	"github.com/yanyiwu/gojieba"
 )
 
@@ -37,12 +40,32 @@ var PartOfSpeechNeeded map[string]bool = map[string]bool {
 type Ans struct {
 	TmpDir string
 	Jieba *gojieba.Jieba
+	T2s *gocc.OpenCC
 }
 
-func NewAns() (*Ans) {
+func NewAns() (*Ans, error) {
+	var err error
 	new_ans := new(Ans)
 	new_ans.Jieba = gojieba.NewJieba()
-	return new_ans
+	new_ans.T2s, err = gocc.New("t2s")
+	if err != nil {
+		return nil, errors.New("Can not init t2s at " + err.Error())
+	}
+
+	return new_ans, nil
+}
+
+func (ans *Ans) TranslateSCList(textList []string) ([]string) {
+	ret := make([]string, len(textList))
+	for i, v := range textList {
+		translatedText, err := ans.T2s.Convert(v)
+		if err != nil {
+			log.Println("Can not translatedText " + err.Error())
+			translatedText = v
+		}
+		ret[i] = translatedText
+	}
+	return ret
 }
 
 func (ans *Ans) FilterTags(tags []string) ([]string) {

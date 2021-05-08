@@ -3,11 +3,9 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"os"
 	"time"
 
-	"github.com/heimoshuiyu/gocc"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -23,13 +21,11 @@ type DB struct {
 	RecordStmt *sql.Stmt
 	DropStmt *sql.Stmt
 	GetAllMessagesStmt *sql.Stmt
-	T2s *gocc.OpenCC
 }
 
 func (db *DB) GetAllMessages() ([]string, error) {
 	var err error
 	var messages string
-	var translatedMessageText string
 	resultSQL, err := db.GetAllMessagesStmt.Query()
 	if err != nil {
 		return nil, errors.New("Can not get all messages from DB at " + err.Error())
@@ -40,12 +36,7 @@ func (db *DB) GetAllMessages() ([]string, error) {
 		if err != nil {
 			return nil, errors.New("Can not read row message at " + err.Error())
 		}
-		translatedMessageText, err = db.T2s.Convert(messages)
-		if err != nil {
-			log.Println("Can not translate", messages, err.Error())
-			translatedMessageText = messages
-		}
-		resultSlice = append(resultSlice, translatedMessageText)
+		resultSlice = append(resultSlice, messages)
 	}
 
 	return resultSlice, nil
@@ -104,11 +95,6 @@ func NewDB(DatabaseName string) (*DB, error) {
 	new_db.GetAllMessagesStmt, err = new_db.SqlConn.Prepare(sqlGetAllMessages)
 	if err != nil {
 		return nil, errors.New("Can not init GetAllMessagesStmt at " + err.Error())
-	}
-
-	new_db.T2s, err = gocc.New("t2s")
-	if err != nil {
-		return nil, errors.New("Can not init t2s at " + err.Error())
 	}
 
 	return new_db, nil

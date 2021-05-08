@@ -114,6 +114,11 @@ func (smtbot *SmtBot) ProcessCommand(update tgbotapi.Update) {
 
 func (smtbot *SmtBot) ReportWords(chatID int64) {
 	allMessages, err := smtbot.db.GetAllMessages()
+	if err != nil {
+		smtbot.SendToID(chatID, "从数据库中获取消息时出错：" + err.Error())
+		return
+	}
+	allMessages = smtbot.ans.TranslateSCList(allMessages)
 	numOfAllMessages := len(allMessages)
 	if err != nil {
 		smtbot.SendToID(chatID, "获取词频错误：" + err.Error())
@@ -230,7 +235,10 @@ func NewSmtBot(token string, adminUserId int, debug bool, timeout int, recordFil
 	}
 
 	// load analysis
-	smtbot.ans = ans.NewAns()
+	smtbot.ans, err = ans.NewAns()
+	if err != nil {
+		log.Fatal("Can not init ans " + err.Error())
+	}
 
 	// load material
 	smtbot.Material, err = material.NewMaterial("food.json")
