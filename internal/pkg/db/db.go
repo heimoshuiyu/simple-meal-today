@@ -29,6 +29,7 @@ type DB struct {
 func (db *DB) GetAllMessages() ([]string, error) {
 	var err error
 	var messages string
+	var translatedMessageText string
 	resultSQL, err := db.GetAllMessagesStmt.Query()
 	if err != nil {
 		return nil, errors.New("Can not get all messages from DB at " + err.Error())
@@ -39,7 +40,12 @@ func (db *DB) GetAllMessages() ([]string, error) {
 		if err != nil {
 			return nil, errors.New("Can not read row message at " + err.Error())
 		}
-		resultSlice = append(resultSlice, messages)
+		translatedMessageText, err = db.T2s.Convert(messages)
+		if err != nil {
+			log.Println("Can not translate", messages, err.Error())
+			translatedMessageText = messages
+		}
+		resultSlice = append(resultSlice, translatedMessageText)
 	}
 
 	return resultSlice, nil
@@ -59,12 +65,7 @@ func (db *DB) ResetMessages() (error) {
 }
 
 func (db *DB) RecordMessage(messageText string) (error) {
-	translatedMessageText, err := db.T2s.Convert(messageText)
-	if err != nil {
-		log.Println("Can not translate", messageText, err.Error())
-		translatedMessageText = messageText
-	}
-	db.RecordStmt.Exec(translatedMessageText, time.Now().Unix())
+	db.RecordStmt.Exec(messageText, time.Now().Unix())
 	return nil
 }
 
