@@ -37,8 +37,10 @@ func (smtbot *SmtBot) MainWorker() {
 			time.Sleep(time.Second * 61)
 		} else if hour == 15-8 && minute == 39 {
 			smtbot.RemindDrinkTea()
+			time.Sleep(time.Second * 61)
 		} else if hour == 19-8 && minute == 0 {
 			smtbot.RemindOffWork()
+			time.Sleep(time.Second * 61)
 		}
 	}
 }
