@@ -10,6 +10,8 @@ var sleepSticker string = "CAACAgUAAxkBAAK5H2CVQcBquJ9LqKGCr9rAYWj4wjCfAAI7AAMtP
 var learningSticker string = "CAACAgUAAxkBAAK5I2CVRReCvK-ZAoDtjmKFUfkjbenHAAI9AAMtPtcksc1z1vy5AAFuHwQ"
 var shuayaSticker string = "CAACAgUAAxkBAAK5J2CVRcLzkEpjyHLjKElAowvSTLqEAAI8AAMtPtckPoNCwGCtGzEfBA"
 var guruVideo string = "https://t.me/aquarium_public/920"
+var teaVideo string = "https://t.me/aquarium_public/938"
+var offWorkVideo string = "https://t.me/aquarium_public/937"
 
 func (smtbot *SmtBot) StartTaskWorkers() {
 	smtbot.wg = new(sync.WaitGroup)
@@ -33,8 +35,20 @@ func (smtbot *SmtBot) MainWorker() {
 		} else if hour == 22-8 && minute == 45 {
 			smtbot.PrepareToSleep()
 			time.Sleep(time.Second * 61)
+		} else if hour == 15-8 && minute == 39 {
+			smtbot.RemindDrinkTea()
+		} else if hour == 19-8 && minute == 0 {
+			smtbot.RemindOffWork()
 		}
 	}
+}
+
+func (smtbot *SmtBot) RemindDrinkTea() {
+	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, teaVideo)
+}
+
+func (smtbot *SmtBot) RemindOffWork() {
+	smtbot.SendVideoToID(smtbot.record.RegistedGroupID, offWorkVideo)
 }
 
 func (smtbot *SmtBot) RemindToLearn() {
