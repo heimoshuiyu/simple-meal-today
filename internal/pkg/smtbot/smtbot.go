@@ -199,6 +199,9 @@ func (smtbot *SmtBot) ProcessGroupMessage(update tgbotapi.Update) {
 			if update.Message.Text[0] == '!' {
 				smtbot.Send(update, smtbot.Google.GetSearchURL(update.Message.Text[1:]))
 			}
+			if update.Message.Text[0] == '`' {
+				smtbot.Send(update, smtbot.ans.Tag(update.Message.Text[1:]))
+			}
 		}
 	}
 }

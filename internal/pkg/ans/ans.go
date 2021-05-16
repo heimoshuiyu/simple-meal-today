@@ -120,6 +120,12 @@ func (p PairList) Len() int { return len(p) }
 func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
 
+func (ans *Ans) Tag(word string) (string) {
+	x := ans.Jieba.Tag(word)
+	ret := strings.Join(x, ", ")
+	return ret
+}
+
 func (ans *Ans) CalcWordCounts(words []string) (map[string]int) {
 	ret := make(map[string]int)
 	for _, word := range words {
